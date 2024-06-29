@@ -21,13 +21,29 @@ const App = () => {
   useEffect(() => {
     fetchTransactions();
   }, []);
+
+  const deleteTransaction = async (id) => {
+    try {
+      const response = await api.delete(`/transactions/${id}`);
+      fetchTransactions();
+    } catch (error) {
+      console.error("Error deleting transaction:", error);
+    }
+  };
+
   return (
     <Router>
       <Header />
       <Routes>
         <Route
           path="/"
-          element={<TransactionDetails transactions={transactions} />}
+          element={
+            <TransactionDetails
+              transactions={transactions}
+              deleteTransaction={deleteTransaction}
+              fetchTransactions={fetchTransactions}
+            />
+          }
         />
         <Route
           path="/transactionsform"

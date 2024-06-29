@@ -60,3 +60,24 @@ async def create_transaction(transaction:TransactionBase, db:db_dependency):
 async def read_transaction(db:db_dependency, skip:int=0, limit:int=100):
     transactions = db.query(models.Transaction).offset(skip).limit(limit).all()
     return transactions
+
+@app.put("/transactions/{id}", response_model=TransactionModel)
+async def update_transaction(id: int, transaction: TransactionBase, db: db_dependency):
+    db_transaction = db.query(models.Transaction).filter(models.Transaction.id == id).first()
+    if not db_transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    for var, value in vars(transaction).items():
+        setattr(db_transaction, var, value) if value else None
+    db.commit()
+    db.refresh(db_transaction)
+    return db_transaction
+
+
+@app.delete("/transactions/{id}", response_model=TransactionModel)
+async def delete_transaction(id: int, db: db_dependency):
+    db_transaction = db.query(models.Transaction).filter(models.Transaction.id == id).first()
+    if not db_transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    db.delete(db_transaction)
+    db.commit()
+    return db_transaction
